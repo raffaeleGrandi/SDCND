@@ -33,9 +33,17 @@ def generate_data():
     
     # Fit a second order polynomial to pixel positions in each fake lane line
     left_fit = np.polyfit(ploty, leftx, 2)    
-    right_fit = np.polyfit(ploty, rightx, 2)    
+    right_fit = np.polyfit(ploty, rightx, 2)   
     
-    return ploty, left_fit, right_fit, leftx, rightx
+    
+    #test_line_data
+    
+    test_lane_base_x = 400
+    test_coeff = np.copy(right_fit)+[0.1e-04, 2e-01, 3]
+    test_fit = test_coeff[0]*ploty**2 + test_coeff[1]*ploty + test_coeff[2]    
+    testx = np.array([test_lane_base_x + (y**2)*test_coeff[0] + y*test_coeff[1] + np.random.randint(-x_range, high=x_range+1) for y in ploty])
+    
+    return ploty, left_fit, right_fit, leftx, rightx, test_fit, testx
 
 
 def measure_curvature_pixels(ploty, left_fit, right_fit):
@@ -72,18 +80,18 @@ np.random.seed(0)
     
 ''' Part 1: generating fake line lanes data '''
 
-ploty, left_fit, right_fit, leftx, rightx = generate_data()
+ploty, left_fit, right_fit, leftx, rightx, test_fit, testx = generate_data()
 
 # Generate x values for the fitted second order polynomials
 left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]    
 right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+test_fitx = test_fit[0]*ploty**2 + test_fit[1]*ploty + test_fit[2]
 
-test_fit = np.copy(right_fit)+[0.1e-04, 2e-01, 3]
-test_fitx = test_fit[0]*ploty**2 + test_fit[1]*ploty + test_fit[2]    
 # Plot up the fake data
 mark_size = 3
 plt.plot(leftx, ploty, 'o', color='red', markersize=mark_size)
 plt.plot(rightx, ploty, 'o', color='blue', markersize=mark_size)
+plt.plot(testx, ploty, 'o', color='grey', markersize=mark_size)
 plt.xlim(0, 1280)
 plt.ylim(0, 720)
 plt.plot(left_fitx, ploty, color='green', linewidth=3)
@@ -99,5 +107,6 @@ print(left_curverad, right_curverad)
 print(left_fit)
 print(right_fit)
 
-print(np.mean(rightx - leftx, axis=0))
+rmse = np.sqrt(np.mean((left_fit - right_fit)**2, axis=0))
+print(rmse)
     
