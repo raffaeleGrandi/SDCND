@@ -1,0 +1,44 @@
+def draw_lines(line_image, lines, line_color=[255, 0, 0], line_thickness=5):
+    pos_lines_list = []
+    neg_lines_list = []
+
+    # Create a sensible polygonal area
+    from shapely.geometry import Point
+    from shapely.geometry.polygon import Polygon
+    bottom_left_vert = [100,540]
+    upper_left_vert = [400,330]
+    upper_right_vert = [550,330]
+    bottom_right_vert = [950,540]
+    sens_poly_vertices = np.array([bottom_left_vert , upper_left_vert , upper_right_vert , bottom_right_vert ], np.int32)
+    sens_polygon = Polygon(sens_poly_vertices)
+
+    for line in lines:
+        for x1,y1,x2,y2 in line:
+            # Select only the lines whose points are within the area of the polygon
+            test_point1 = Point(x1,y1)
+            test_point2 = Point(x2,y2)
+            if sens_polygon.contains(test_point1) and sens_polygon.contains(test_point2):
+                i_gradient = (y2 - y1) / (x2 - x1)        
+                i_intercept = (x2*y1 - x1*y2) / (x2 - x1)                
+                if i_gradient > 0.4 and i_gradient < 0.8:
+                    pos_lines_list.append((i_gradient,i_intercept))
+                if i_gradient < -0.4 and i_gradient > -0.8:
+                    neg_lines_list.append((i_gradient,i_intercept))
+
+    if len(pos_lines_list) != 0:
+        pos_line_data = np.mean(pos_lines_list,axis=0) 
+        # Draw positive line
+        y1 = 540
+        x1 = int((y1 - pos_line_data[1]) / pos_line_data[0])
+        y2 = 350
+        x2 = int((y2 - pos_line_data[1]) / pos_line_data[0])
+        cv2.line(line_image,(x1,y1),(x2,y2),line_color,line_thickness)
+
+    if len(neg_lines_list) != 0:
+        neg_line_data = np.mean(neg_lines_list,axis=0)        
+        # Draw negative line
+        y1 = 540
+        x1 = int((y1 - neg_line_data[1]) / neg_line_data[0])
+        y2 = 350
+        x2 = int((y2 - neg_line_data[1]) / neg_line_data[0])
+        cv2.line(line_image,(x1,y1),(x2,y2),line_color,line_thickness)

@@ -1,0 +1,9 @@
+orig_img = mpimg.imread('test_images/straight_lines1.jpg')
+undist_img,_ = undist_and_transform(orig_image,mtx,dist,M)
+binary_thres_img = binary_threshold_pipeline(orig_img)
+binary_undist_img, binary_warped = undist_and_transform(binary_thres_img,mtx,dist,M)
+
+find_lane_pixels_sliding_windows(binary_warped,left_lane_line,right_lane_line)
+fit_polynomial(left_lane_line,right_lane_line)
+
+final_image = unwarp(undist_img, binary_warped, left_lane_line, right_lane_line)
