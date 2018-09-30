@@ -39,14 +39,14 @@ def generate_data():
     #test_line_data
     
     test_lane_base_x = 400
-    test_coeff = np.copy(right_fit)+[0.1e-04, 2e-01, 3]
-    test_fit = test_coeff[0]*ploty**2 + test_coeff[1]*ploty + test_coeff[2]    
+    test_coeff = np.copy(right_fit)+[0.1e-04, 2e-01, 3]    
     testx = np.array([test_lane_base_x + (y**2)*test_coeff[0] + y*test_coeff[1] + np.random.randint(-x_range, high=x_range+1) for y in ploty])
+    test_fit = np.polyfit(ploty, testx, 2) 
     
     return ploty, left_fit, right_fit, leftx, rightx, test_fit, testx
 
 
-def measure_curvature_pixels(ploty, left_fit, right_fit):
+def measure_curvature_pixels(ploty, lane_fit):
     
     '''
     Calculates the curvature of polynomial functions in pixels.
@@ -61,16 +61,14 @@ def measure_curvature_pixels(ploty, left_fit, right_fit):
     
     ##### TO-DO: Implement the calculation of R_curve (radius of curvature) #####
     ## Implement the calculation of the left line here
-    left_curverad = ((1+(2*left_fit[0]*y_eval+left_fit[1])**2)**(3/2)) / np.abs(2*left_fit[0])
-    ## Implement the calculation of the right line here
-    right_curverad = ((1+(2*right_fit[0]*y_eval+right_fit[1])**2)**(3/2)) / np.abs(2*right_fit[0])
-    
+    lane_curverad = ((1+(2*lane_fit[0]*y_eval+lane_fit[1])**2)**(3/2)) / np.abs(2*lane_fit[0])
+        
     # Solution
     #left_curverad = ((1 + (2*left_fit[0]*y_eval + left_fit[1])**2)**1.5) / np.absolute(2*left_fit[0])
     #right_curverad = ((1 + (2*right_fit[0]*y_eval + right_fit[1])**2)**1.5) / np.absolute(2*right_fit[0])
     
     
-    return left_curverad, right_curverad
+    return lane_curverad
 
 # ------
     
@@ -101,12 +99,11 @@ plt.gca().invert_yaxis() # to visualize as we do the images
 
 ''' Part2: measuring curvature '''
 
-left_curverad, right_curverad = measure_curvature_pixels(ploty, left_fit, right_fit)
+left_curverad = measure_curvature_pixels(ploty, left_fit)
+right_curverad = measure_curvature_pixels(ploty, right_fit)
 print(left_curverad, right_curverad)
+print(measure_curvature_pixels(ploty, test_fit))
 
-print(left_fit)
-print(right_fit)
-
-rmse = np.sqrt(np.mean((left_fit - right_fit)**2, axis=0))
+rmse = np.sqrt(np.mean((left_fit - test_fit)**2, axis=0))
 print(rmse)
     
